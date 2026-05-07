@@ -1,0 +1,24 @@
+import tkinter as tk
+from storage import read_messages, write_messages
+
+messages = read_messages()
+
+def save_message():
+    text = entry.get()
+    messages.append(text)
+    write_messages(messages)
+    entry.delete(0, tk.END)
+
+window = tk.Tk()
+window.title("Discord Bot Message GUI")
+
+label = tk.Label(window, text="Enter a message:")
+label.pack()
+
+entry = tk.Entry(window, width=40)
+entry.pack()
+
+button = tk.Button(window, text="Save Message", command=save_message)
+button.pack()
+
+window.mainloop()
