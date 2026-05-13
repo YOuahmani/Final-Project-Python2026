@@ -1,0 +1,8 @@
+@bot.command()
+async def sendall(ctx):
+    messages = read_messages()
+    if len(messages) == 0:
+        await ctx.send("No saved messages.")
+    else:
+        for m in messages:
+            await ctx.send(m)
