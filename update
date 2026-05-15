@@ -1,0 +1,73 @@
+import json
+import tkinter as tk
+from tkinter import messagebox
+
+# -----------------------------
+# JSON READ / WRITE
+# -----------------------------
+FILENAME = "messages.json"
+
+def read_messages():
+    try:
+        with open(FILENAME, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+def write_messages(data):
+    with open(FILENAME, "w") as file:
+        json.dump(data, file, indent=4)
+
+messages = read_messages()
+
+# -----------------------------
+# BOT LOGIC (ENTRY LEVEL)
+# -----------------------------
+def bot_response(user_text):
+    user_text = user_text.lower()
+
+    if user_text == "ping":
+        return "Pong!"
+
+    if user_text.startswith("addmsg "):
+        msg = user_text.replace("addmsg ", "")
+        messages.append(msg)
+        write_messages(messages)
+        return "Message saved!"
+
+    if user_text == "sendall":
+        if len(messages) == 0:
+            return "No saved messages."
+        return "\n".join(messages)
+
+    return "I don't understand that command."
+
+# -----------------------------
+# GUI FUNCTIONS
+# -----------------------------
+def handle_input():
+    user_text = entry.get()
+    entry.delete(0, tk.END)
+
+    reply = bot_response(user_text)
+    messagebox.showinfo("Bot Response", reply)
+
+# -----------------------------
+# GUI WINDOW
+# -----------------------------
+window = tk.Tk()
+window.title("Offline Python Bot")
+
+label = tk.Label(window, text="Enter a command:")
+label.pack()
+
+entry = tk.Entry(window, width=40)
+entry.pack()
+
+button = tk.Button(window, text="Send", command=handle_input)
+button.pack()
+
+info_label = tk.Label(window, text="Commands:\n ping\n addmsg <text>\n sendall")
+info_label.pack()
+
+window.mainloop()
