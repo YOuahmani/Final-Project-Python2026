@@ -1,0 +1,141 @@
+import json
+import tkinter as tk
+from tkinter import messagebox
+
+# -----------------------------
+# JSON READ / WRITE
+# -----------------------------
+FILENAME = "messages.json"
+
+def read_messages():
+    try:
+        with open(FILENAME, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+def write_messages(data):
+    with open(FILENAME, "w") as file:
+        json.dump(data, file, indent=4)
+
+messages = read_messages()
+
+# -----------------------------
+# BOT LOGIC
+# -----------------------------
+def bot_response(user_text):
+    user_text = user_text.lower()
+
+    if user_text == "ping":
+        return "Pong!"
+
+    if user_text.startswith("addmsg "):
+        msg = user_text.replace("addmsg ", "")
+        messages.append(msg)
+        write_messages(messages)
+        return "Message saved!"
+
+    if user_text == "sendall":
+        if len(messages) == 0:
+            return "No saved messages."
+        return "\n".join(messages)
+
+    if user_text == "clearall":
+        messages.clear()
+        write_messages(messages)
+        return "All messages erased!"
+
+    return "I don't understand that command."
+
+# -----------------------------
+# GUI FUNCTIONS
+# -----------------------------
+def handle_input():
+    user_text = entry.get()
+    entry.delete(0, tk.END)
+
+    reply = bot_response(user_text)
+
+    chat_box.config(state="normal")
+    chat_box.insert(tk.END, f"You: {user_text}\n", "user")
+    chat_box.insert(tk.END, f"Bot: {reply}\n\n", "bot")
+    chat_box.config(state="disabled")
+    chat_box.see(tk.END)
+
+# -----------------------------
+# DISCORD‑STYLE GUI WINDOW
+# -----------------------------
+window = tk.Tk()
+window.title("Bot project")
+window.geometry("700x400")
+window.configure(bg="#2f3136")  # Discord dark gray
+
+# LEFT SIDEBAR (COMMAND LIST)
+sidebar = tk.Frame(window, bg="#202225", width=180)
+sidebar.pack(side="left", fill="y")
+
+title_label = tk.Label(
+    sidebar,
+    text="Commands",
+    bg="#202225",
+    fg="white",
+    font=("Arial", 14, "bold")
+)
+title_label.pack(pady=10)
+
+commands_label = tk.Label(
+    sidebar,
+    text="ping\n\naddmsg <text>\n\nsendall\n\nclearall",
+    bg="#202225",
+    fg="#b9bbbe",
+    font=("Arial", 12),
+    justify="left"
+)
+commands_label.pack(pady=10)
+
+# CHAT AREA
+chat_box = tk.Text(
+    window,
+    bg="#36393f",
+    fg="white",
+    font=("Arial", 11),
+    state="disabled",
+    wrap="word",
+    bd=0,
+    padx=10,
+    pady=10
+)
+chat_box.pack(side="top", fill="both", expand=True)
+
+chat_box.tag_config("user", foreground="#7289da")  # Discord blurple
+chat_box.tag_config("bot", foreground="#43b581")   # Discord green
+
+# INPUT BAR
+bottom_frame = tk.Frame(window, bg="#2f3136")
+bottom_frame.pack(side="bottom", fill="x")
+
+entry = tk.Entry(
+    bottom_frame,
+    width=50,
+    bg="#40444b",
+    fg="white",
+    insertbackground="white",
+    bd=0,
+    font=("Arial", 12)
+)
+entry.pack(side="left", padx=10, pady=10)
+
+button = tk.Button(
+    bottom_frame,
+    text="Send",
+    command=handle_input,
+    bg="#7289da",
+    fg="white",
+    activebackground="#5b6eae",
+    bd=0,
+    padx=15,
+    pady=5
+)
+button.pack(side="left")
+
+window.mainloop()
